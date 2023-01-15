@@ -62,6 +62,10 @@ public class GameWindow extends JFrame implements Runnable {
             case 1:
                 currentScreen = new GameScreen(keyListener);
                 break;
+            // draw game over screen
+            case 2:
+                currentScreen = new GameOverScreen(mouseListener);
+                break;
             // should never be reached - throw exception
             default:
                 System.out.print("Unknown screen");

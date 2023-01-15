@@ -1,6 +1,11 @@
-import java.awt.Graphics2D;
-import java.awt.Color;
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Snake {
     // array of rectangles to hold the body pieces - singly linked list
@@ -11,6 +16,8 @@ public class Snake {
     public int size;
     public int tailIndex = 0;
     public int headIndex = 0;
+    public int score;
+    public Rect gameArea;
     // direction the snake is going in
     public Direction direction = Direction.RIGHT;
 
@@ -18,10 +25,12 @@ public class Snake {
     public double waitBetweenUpdates = 0.1f;
     // how much time we have left before the pieces move
     public double waitTimeLeft = waitBetweenUpdates;
-    public Snake(int size, double startX, double startY, double bodyWidth, double bodyHeight){
+    public Snake(int size, double startX, double startY, double bodyWidth, double bodyHeight, Rect gameArea){
         this.size = size;
         this.bodyWidth = bodyWidth;
         this.bodyHeight = bodyHeight;
+        this.gameArea = gameArea;
+        this.score = 0;
         // initialise array that holds snake body
         for(int i = 0; i <= size; i++){
             // increment x to one body piece to the right after each loop
@@ -30,8 +39,62 @@ public class Snake {
             // head is the last index of the array - rightmost piece of snake
             headIndex++;
         }
+        // minus 1 to get the correct index (as array index starts at 0)
         headIndex--;
-        System.out.print(headIndex);
+    }
+
+    public void grow(){
+        //append new rectangle to tail of array in direction snake is travelling in
+
+        double newX = 0;
+        double newY = 0;
+        // get x & y of 1 behind the tail of the current direction
+        if(direction == Direction.RIGHT){
+            newX = body[tailIndex].x - bodyWidth;
+            newY = body[tailIndex].y;
+        }else if(direction == Direction.LEFT){
+            newX = body[tailIndex].x + bodyWidth;
+            newY = body[tailIndex].y;
+        }else if(direction == Direction.UP){
+            newX = body[tailIndex].x;
+            newY = body[tailIndex].y + bodyHeight;
+        }else if(direction == Direction.DOWN){
+            newX = body[tailIndex].x;
+            newY = body[tailIndex].y - bodyHeight;
+        }
+
+        Rect newBodyPiece = new Rect(newX, newY, bodyWidth, bodyHeight);
+        tailIndex = (tailIndex - 1) % body.length;
+        body[tailIndex] = newBodyPiece;
+
+        score += 10;
+    }
+
+    public boolean intersectingBoundary(Rect head){
+        return (head.x < gameArea.x || (head.x + head.width) > gameArea.x + gameArea.width ||
+                head.y < gameArea.y || (head.y + head.height) > gameArea.y + gameArea.height);
+    }
+
+    public boolean intersectingSelf(){
+        Rect head = body[headIndex];
+        // for every rectangle inside the snake body (except for the head) check if it's colliding with the head
+        return intersectingRect(head) || intersectingBoundary(head);
+    }
+
+    public boolean intersectingRect(Rect rect){
+        // for every rectangle inside the snake body check if it's colliding with the rectangle
+        for(int i = tailIndex; i != headIndex; i = (i + 1) % body.length){
+            if(intersecting(rect, body[i])){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // check whether 2 rectangles are intersecting
+    public boolean intersecting(Rect r1, Rect r2){
+        return (r1.x >= r2.x && r1.x + r1.width <= r2.x + r2.width &&
+                r1.y >= r2.y && r1.y + r1.height <= r2.y + r2.height);
     }
 
     // player controller
@@ -55,6 +118,31 @@ public class Snake {
             // get out of this function
             return;
         }
+
+        // check if the snake's head is intersecting with its body
+        if(intersectingSelf()){
+            // game over - write player score to score text file & change state to main menu
+            ArrayList<String> scoreList = new ArrayList<>();
+            try{
+                File scoreFile = new File("assets/scores.txt");
+                Scanner scoreReader = new Scanner(scoreFile);
+                while(scoreReader.hasNext()){
+                    scoreList.add(scoreReader.next());
+                }
+                // replace last score
+                scoreList.set(0, Integer.toString(score));
+                // if last score is higher than high-score - replace high-score
+                if(score > Integer.parseInt(scoreList.get(1))){
+                    scoreList.set(1, Integer.toString(score));
+                }
+                Files.write(Path.of("assets/scores.txt"), scoreList, StandardCharsets.UTF_8);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            GameWindow.getWindow().changeState(2);
+            System.out.println(this.score);
+        }
+
         // we've just waited the wait time - so reset it again
         waitTimeLeft = waitBetweenUpdates;
         // new x and y to move the tail piece to - picking up body piece at the tail and moving it to 1 in front of head
