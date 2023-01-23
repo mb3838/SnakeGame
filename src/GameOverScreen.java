@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class GameOverScreen extends Screen{
-    public BufferedImage gameOver, back, backHover, backCurrent;
-    public Rect gameOverRect, backRect;
+    private BufferedImage gameOver, back, backHover, backCurrent;
+    private Rect gameOverRect, backRect;
     // this list will contain 2 numbers - the first number is the players last score and the second is the high-score
-    public ArrayList<Integer> scoreList = new ArrayList<>();
-    public Font scoreFont;
+    private ArrayList<Integer> scoreList = new ArrayList<>();
+    private Font scoreFont;
     public GameMouseListener mouseListener;
 
     public GameOverScreen(GameMouseListener mouseListener){
@@ -27,7 +27,6 @@ public class GameOverScreen extends Screen{
             while(scoreReader.hasNextInt()){
                 scoreList.add(scoreReader.nextInt());
             }
-            System.out.print(scoreList);
             // try to open the font file
             scoreFont = Font.createFont(Font.TRUETYPE_FONT, new File("assets/Eight-Bit_Madness.ttf")).deriveFont(40f);
         }catch(Exception e){
@@ -44,8 +43,8 @@ public class GameOverScreen extends Screen{
     @Override
     public void update(double deltaTime){
         // check if the mouse is hovering over the back image
-        if(mouseListener.getX() >= backRect.x && mouseListener.getX() <= backRect.x + backRect.width &&
-                mouseListener.getY() >= backRect.y && mouseListener.getY() <= backRect.y + backRect.height){
+        if(mouseListener.getX() >= backRect.getX() && mouseListener.getX() <= backRect.getX() + backRect.getWidth() &&
+                mouseListener.getY() >= backRect.getY() && mouseListener.getY() <= backRect.getY() + backRect.getHeight()){
             backCurrent = backHover;
             // if mouse is pressed on back image - change state to menu state
             if(mouseListener.isPressed()){
@@ -63,14 +62,14 @@ public class GameOverScreen extends Screen{
         g.fillRect(0,0,Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
         // add game over text image
-        g.drawImage(gameOver, (int)gameOverRect.x, (int)gameOverRect.y, null);
+        g.drawImage(gameOver, (int)gameOverRect.getX(), (int)gameOverRect.getY(), null);
         // add player score text
         g.setColor(Color.WHITE);
         g.setFont(scoreFont);
-        g.drawString("Score:  " + scoreList.get(0), (int)gameOverRect.x, 270);
+        g.drawString("Score:  " + scoreList.get(0), (int)gameOverRect.getX(), 270);
         // add high-score text
-        g.drawString("High-Score:  " + scoreList.get(1), (int)gameOverRect.x, 350);
+        g.drawString("High-Score:  " + scoreList.get(1), (int)gameOverRect.getX(), 350);
         // add back text image
-        g.drawImage(backCurrent, (int)backRect.x, (int)backRect.y, null);
+        g.drawImage(backCurrent, (int)backRect.getX(), (int)backRect.getY(), null);
     }
 }

@@ -7,11 +7,11 @@ import java.io.File;
 
 public class GameScreen extends Screen{
     // rectangles for background colour and foreground colour/panel for the snake to be on
-    Rect background, gameArea;
-    Snake snake;
-    GameKeyListener keyListener;
-    public Food food;
-    public BufferedImage scoreTitle;
+    private Rect background, gameArea;
+    private Snake snake;
+    public GameKeyListener keyListener;
+    private Food food;
+    private BufferedImage scoreTitle;
     public Font scoreFont;
 
     public GameScreen(GameKeyListener keyListener){
@@ -47,7 +47,7 @@ public class GameScreen extends Screen{
             snake.changeDirection(Direction.RIGHT);
         }
         // spawn food if no current food is spawned
-        if(!food.isSpawned){
+        if(!food.isSpawned()){
             food.spawn();
         }
         snake.update(deltaTime);
@@ -60,10 +60,10 @@ public class GameScreen extends Screen{
         Graphics2D g2D = (Graphics2D)g;
         // background colour
         g2D.setColor(Color.BLACK);
-        g2D.draw(new Rectangle2D.Double(background.x, background.y, background.width, background.height));
+        g2D.draw(new Rectangle2D.Double(background.getX(), background.getY(), background.getWidth(), background.getHeight()));
         // game area outline colour
         g2D.setColor(Color.WHITE);
-        g2D.draw(new Rectangle2D.Double(gameArea.x, gameArea.y, gameArea.width, gameArea.height));
+        g2D.draw(new Rectangle2D.Double(gameArea.getX(), gameArea.getY(), gameArea.getWidth(), gameArea.getHeight()));
 
         // draw snake
         snake.draw(g2D);

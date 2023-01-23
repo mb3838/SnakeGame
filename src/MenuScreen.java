@@ -8,9 +8,9 @@ public class MenuScreen extends Screen {
 
     public GameKeyListener keyListener;
     public GameMouseListener mouseListener;
-    public BufferedImage title, play, playHover, exit, exitHover;
-    public BufferedImage playCurrent, exitCurrent;
-    public Rect titleRect, playRect, exitRect;
+    private BufferedImage title, play, playHover, exit, exitHover;
+    private BufferedImage playCurrent, exitCurrent;
+    private Rect titleRect, playRect, exitRect;
     public MenuScreen(GameKeyListener keyListener, GameMouseListener mouseListener){
         this.keyListener = keyListener;
         this.mouseListener = mouseListener;
@@ -37,8 +37,8 @@ public class MenuScreen extends Screen {
     @Override
     public void update(double deltaTime){
         // check if the mouse is hovering over the play image
-        if(mouseListener.getX() >= playRect.x && mouseListener.getX() <= playRect.x + playRect.width &&
-            mouseListener.getY() >= playRect.y && mouseListener.getY() <= playRect.y + playRect.height){
+        if(mouseListener.getX() >= playRect.getX() && mouseListener.getX() <= playRect.getX() + playRect.getWidth() &&
+            mouseListener.getY() >= playRect.getY() && mouseListener.getY() <= playRect.getY() + playRect.getHeight()){
             playCurrent = playHover;
             // if mouse is pressed on play image - change state to game state
             if(mouseListener.isPressed()){
@@ -49,8 +49,8 @@ public class MenuScreen extends Screen {
             playCurrent = play;
         }
         // check if the mouse is hovering over the exit image
-        if(mouseListener.getX() >= exitRect.x && mouseListener.getX() <= exitRect.x + exitRect.width &&
-                mouseListener.getY() >= exitRect.y && mouseListener.getY() <= exitRect.y + exitRect.height){
+        if(mouseListener.getX() >= exitRect.getX() && mouseListener.getX() <= exitRect.getX() + exitRect.getWidth() &&
+                mouseListener.getY() >= exitRect.getY() && mouseListener.getY() <= exitRect.getY() + exitRect.getHeight()){
             exitCurrent = exitHover;
             // if mouse is pressed on exit image - exit game
             if(mouseListener.isPressed()){
@@ -68,10 +68,10 @@ public class MenuScreen extends Screen {
         g.fillRect(0,0,Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
 
         // add game title
-        g.drawImage(title, (int)titleRect.x, (int)titleRect.y, null);
+        g.drawImage(title, (int)titleRect.getX(), (int)titleRect.getY(), null);
         // add play
-        g.drawImage(playCurrent, (int)playRect.x, (int)playRect.y, null);
+        g.drawImage(playCurrent, (int)playRect.getX(), (int)playRect.getY(), null);
         // add exit
-        g.drawImage(exitCurrent, (int)exitRect.x, (int)exitRect.y, null);
+        g.drawImage(exitCurrent, (int)exitRect.getX(), (int)exitRect.getY(), null);
     }
 }

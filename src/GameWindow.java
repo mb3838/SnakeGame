@@ -11,10 +11,10 @@ public class GameWindow extends JFrame implements Runnable {
     public static GameWindow window = null;
     public boolean gameRunning;
     // current state
-    public  int currentState;
+    private  int currentState;
     // current screen
-    public  Screen currentScreen;
-    public  GameKeyListener keyListener = new GameKeyListener();
+    private Screen currentScreen;
+    public GameKeyListener keyListener = new GameKeyListener();
     // static mouse listener to pass into screen classes
     public  GameMouseListener mouseListener = new GameMouseListener();
     public GameWindow(){
@@ -68,7 +68,7 @@ public class GameWindow extends JFrame implements Runnable {
                 break;
             // should never be reached - throw exception
             default:
-                System.out.print("Unknown screen");
+                System.out.print("Error - Unknown screen");
                 currentScreen = null;
                 break;
         }

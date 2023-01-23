@@ -9,22 +9,19 @@ import java.util.Scanner;
 
 public class Snake {
     // array of rectangles to hold the body pieces - singly linked list
-    public Rect[] body = new Rect[100];
+    private Rect[] body = new Rect[100];
     // width and height of the snake's individual body pieces - 24*24 grid size
-    public double bodyWidth, bodyHeight;
+    private double bodyWidth, bodyHeight;
     // snake size - how many body pieces in its length
-    public int size;
-    public int tailIndex = 0;
-    public int headIndex = 0;
-    public int score;
-    public Rect gameArea;
-    // direction the snake is going in
-    public Direction direction = Direction.RIGHT;
-
-    // variable framerate - how much time we wait before each piece moves
-    public double waitBetweenUpdates = 0.1f;
+    private int size;
+    private int tailIndex = 0;
+    private int headIndex = 0;
+    private int score;
+    private Rect gameArea;
+    // variable frame-rate - how much time we wait before each piece moves
+    private double waitBetweenUpdates = 0.1f;
     // how much time we have left before the pieces move
-    public double waitTimeLeft = waitBetweenUpdates;
+    private double waitTimeLeft = waitBetweenUpdates;
     public Snake(int size, double startX, double startY, double bodyWidth, double bodyHeight, Rect gameArea){
         this.size = size;
         this.bodyWidth = bodyWidth;
@@ -34,7 +31,7 @@ public class Snake {
         // initialise array that holds snake body
         for(int i = 0; i <= size; i++){
             // increment x to one body piece to the right after each loop
-            Rect bodyPiece = new Rect(startX + i * bodyWidth, startY, bodyWidth, bodyHeight);
+            Rect bodyPiece = new Rect(startX + i * bodyWidth, startY, bodyWidth, bodyHeight, Direction.RIGHT);
             body[i] = bodyPiece;
             // head is the last index of the array - rightmost piece of snake
             headIndex++;
@@ -48,31 +45,41 @@ public class Snake {
 
         double newX = 0;
         double newY = 0;
-        // get x & y of 1 behind the tail of the current direction
-        if(direction == Direction.RIGHT){
-            newX = body[tailIndex].x - bodyWidth;
-            newY = body[tailIndex].y;
-        }else if(direction == Direction.LEFT){
-            newX = body[tailIndex].x + bodyWidth;
-            newY = body[tailIndex].y;
-        }else if(direction == Direction.UP){
-            newX = body[tailIndex].x;
-            newY = body[tailIndex].y + bodyHeight;
-        }else if(direction == Direction.DOWN){
-            newX = body[tailIndex].x;
-            newY = body[tailIndex].y - bodyHeight;
+        Direction newDirection = Direction.RIGHT;
+        // get x & y of 1 behind the tail - in the direction of the current tail piece
+        if(body[tailIndex].getDirection() == Direction.RIGHT){
+            newX = body[tailIndex].getX() - bodyWidth;
+            newY = body[tailIndex].getY();
+            newDirection = Direction.RIGHT;
+        }else if(body[tailIndex].getDirection() == Direction.LEFT){
+            newX = body[tailIndex].getX() + bodyWidth;
+            newY = body[tailIndex].getY();
+            newDirection = Direction.LEFT;
+        }else if(body[tailIndex].getDirection() == Direction.UP){
+            newX = body[tailIndex].getX();
+            newY = body[tailIndex].getY() + bodyHeight;
+            newDirection = Direction.UP;
+        }else if(body[tailIndex].getDirection() == Direction.DOWN){
+            newX = body[tailIndex].getX();
+            newY = body[tailIndex].getY() - bodyHeight;
+            newDirection = Direction.DOWN;
         }
 
-        Rect newBodyPiece = new Rect(newX, newY, bodyWidth, bodyHeight);
-        tailIndex = (tailIndex - 1) % body.length;
+        Rect newBodyPiece = new Rect(newX, newY, bodyWidth, bodyHeight, newDirection);
+        // if the old tail's index is the start of the array (index 0) - new tail piece index should be at the end of the array
+        if(tailIndex == 0){
+            tailIndex = body.length - 1;
+        }
+        // get new tail index one position before old tail
+        tailIndex = tailIndex - 1;
         body[tailIndex] = newBodyPiece;
 
         score += 10;
     }
 
     public boolean intersectingBoundary(Rect head){
-        return (head.x < gameArea.x || (head.x + head.width) > gameArea.x + gameArea.width ||
-                head.y < gameArea.y || (head.y + head.height) > gameArea.y + gameArea.height);
+        return (head.getX() < gameArea.getX() || (head.getX() + head.getWidth()) > gameArea.getX() + gameArea.getWidth() ||
+                head.getY() < gameArea.getY() || (head.getY() + head.getHeight()) > gameArea.getY() + gameArea.getHeight());
     }
 
     public boolean intersectingSelf(){
@@ -93,21 +100,22 @@ public class Snake {
 
     // check whether 2 rectangles are intersecting
     public boolean intersecting(Rect r1, Rect r2){
-        return (r1.x >= r2.x && r1.x + r1.width <= r2.x + r2.width &&
-                r1.y >= r2.y && r1.y + r1.height <= r2.y + r2.height);
+        return (r1.getX() >= r2.getX() && r1.getX() + r1.getWidth() <= r2.getX() + r2.getWidth() &&
+                r1.getY() >= r2.getY() && r1.getY() + r1.getHeight() <= r2.getY() + r2.getHeight());
     }
 
     // player controller
     public void changeDirection(Direction newDirection){
         // don't allow user to go back on themselves
-        if(direction == Direction.LEFT && newDirection != Direction.RIGHT) {
-            direction = newDirection;
-        }else if(direction == Direction.RIGHT && newDirection != Direction.LEFT) {
-            direction = newDirection;
-        }else if(direction == Direction.UP && newDirection != Direction.DOWN) {
-            direction = newDirection;
-        }else if(direction == Direction.DOWN && newDirection != Direction.UP) {
-            direction = newDirection;
+        // check that the current direction that the snake head is moving in is not the opposite of what the user has pressed
+        if(body[headIndex].getDirection() == Direction.LEFT && newDirection != Direction.RIGHT) {
+            body[headIndex].setDirection(newDirection);
+        }else if(body[headIndex].getDirection() == Direction.RIGHT && newDirection != Direction.LEFT) {
+            body[headIndex].setDirection(newDirection);
+        }else if(body[headIndex].getDirection() == Direction.UP && newDirection != Direction.DOWN) {
+            body[headIndex].setDirection(newDirection);
+        }else if(body[headIndex].getDirection() == Direction.DOWN && newDirection != Direction.UP) {
+            body[headIndex].setDirection(newDirection);
         }
     }
 
@@ -140,28 +148,34 @@ public class Snake {
                 e.printStackTrace();
             }
             GameWindow.getWindow().changeState(2);
-            System.out.println(this.score);
         }
 
         // we've just waited the wait time - so reset it again
         waitTimeLeft = waitBetweenUpdates;
+
         // new x and y to move the tail piece to - picking up body piece at the tail and moving it to 1 in front of head
         double newX = 0;
         double newY = 0;
+        Direction currentDirection = body[headIndex].getDirection();
+        Direction newDirection = Direction.RIGHT;
 
         // get the head position and increment it 1 piece in correct direction
-        if(direction == Direction.RIGHT){
-            newX = body[headIndex].x + bodyWidth;
-            newY = body[headIndex].y;
-        }else if(direction == Direction.LEFT){
-            newX = body[headIndex].x - bodyWidth;
-            newY = body[headIndex].y;
-        }else if(direction == Direction.UP){
-            newX = body[headIndex].x;
-            newY = body[headIndex].y - bodyHeight;
-        }else if(direction == Direction.DOWN){
-            newX = body[headIndex].x;
-            newY = body[headIndex].y + bodyHeight;
+        if(currentDirection == Direction.RIGHT){
+            newX = body[headIndex].getX() + bodyWidth;
+            newY = body[headIndex].getY();
+            newDirection = Direction.RIGHT;
+        }else if(currentDirection == Direction.LEFT){
+            newX = body[headIndex].getX() - bodyWidth;
+            newY = body[headIndex].getY();
+            newDirection = Direction.LEFT;
+        }else if(currentDirection == Direction.UP){
+            newX = body[headIndex].getX();
+            newY = body[headIndex].getY() - bodyHeight;
+            newDirection = Direction.UP;
+        }else if(currentDirection == Direction.DOWN){
+            newX = body[headIndex].getX();
+            newY = body[headIndex].getY() + bodyHeight;
+            newDirection = Direction.DOWN;
         }
 
 
@@ -172,9 +186,10 @@ public class Snake {
         // set new index for head and tail
         headIndex = (headIndex + 1) % body.length;
         tailIndex = (tailIndex + 1) % body.length;
-        // update head location to the new piece in front
-        body[headIndex].x = newX;
-        body[headIndex].y = newY;
+        // update head location and direction to the new piece in front
+        body[headIndex].setX(newX);
+        body[headIndex].setY(newY);
+        body[headIndex].setDirection(newDirection);
     }
 
     public void draw(Graphics2D g2D){
@@ -191,8 +206,12 @@ public class Snake {
             }else{
                 g2D.setColor(new Color(49, 197, 0));
             }
+            // update the direction of the tail piece of the snake
+            if(i == tailIndex-1){
+                // set the current direction of the tail by looking at
+            }
 
-            g2D.fill(new Rectangle2D.Double(piece.x, piece.y, piece.width, piece.height));
+            g2D.fill(new Rectangle2D.Double(piece.getX(), piece.getY(), piece.getWidth(), piece.getHeight()));
         }
     }
 }
